@@ -30,7 +30,6 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   end
   
   def update
-    # Special handling for activation/deactivation
     if coupon_status_changed_to_active?
       unless @merchant.can_activate_coupon?
         return render json: { 

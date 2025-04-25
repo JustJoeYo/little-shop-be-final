@@ -3,8 +3,17 @@ class Merchant < ApplicationRecord
   has_many :items, dependent: :destroy
   has_many :invoices, dependent: :destroy
   has_many :customers, through: :invoices
+  has_many :coupons, dependent: :destroy
   # has_many :invoice_items, through: :invoices
   # has_many :transactions, through: :invoices
+  
+  def active_coupons_count
+    coupons.active.count
+  end
+  
+  def can_activate_coupon?
+    active_coupons_count < 5
+  end
 
   def self.sorted_by_creation
     Merchant.order("created_at DESC")

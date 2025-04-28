@@ -202,4 +202,35 @@ describe "Merchant endpoints", :type => :request do
     end
 
   end
+
+  it "Gets all merchants with coupon counts" do
+    merchant1 = create(:merchant)
+    merchant2 = create(:merchant)
+    
+    customer = create(:customer)
+    
+    coupon1 = create(:coupon, merchant: merchant1)
+    coupon2 = create(:coupon, merchant: merchant1)
+    
+    create(:invoice, merchant: merchant1, customer: customer, coupon: coupon1)
+    create(:invoice, merchant: merchant1, customer: customer, coupon: coupon2)
+    
+    get '/api/v1/merchants'
+    
+    expect(response).to be_successful
+    
+    json = JSON.parse(response.body, symbolize_names: true)
+    merchants = json[:data]
+    
+    expect(merchants.count).to eq(2)
+    
+    merchant1_data = merchants.find { |merchantz| merchantz[:id].to_i == merchant1.id }
+    merchant2_data = merchants.find { |merchantz| merchantz[:id].to_i == merchant2.id }
+    
+    expect(merchant1_data[:attributes][:coupons_count]).to eq(2)
+    expect(merchant1_data[:attributes][:invoice_coupon_count]).to eq(2)
+    
+    expect(merchant2_data[:attributes][:coupons_count]).to eq(0)
+    expect(merchant2_data[:attributes][:invoice_coupon_count]).to eq(0)
+  end
 end

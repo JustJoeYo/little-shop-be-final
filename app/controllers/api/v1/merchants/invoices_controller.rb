@@ -1,11 +1,18 @@
 class Api::V1::Merchants::InvoicesController < ApplicationController
+  before_action :set_merchant
+  
   def index
-    merchant = Merchant.find(params[:merchant_id])
     if params[:status].present?
-      invoices = merchant.invoices_filtered_by_status(params[:status])
+      invoices = @merchant.invoices_filtered_by_status(params[:status])
     else
-      invoices = merchant.invoices
+      invoices = @merchant.invoices
     end
-    render json: InvoiceSerializer.new(invoices)
+    render json: MerchantInvoiceSerializer.new(invoices)
+  end
+  
+  private
+  
+  def set_merchant
+    @merchant = Merchant.find(params[:merchant_id])
   end
 end

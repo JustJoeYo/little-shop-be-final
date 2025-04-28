@@ -3,7 +3,11 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   before_action :set_coupon, only: [:show, :update]
   
   def index
-    coupons = @merchant.coupons
+    coupons = if params[:status].present?
+      @merchant.coupons.where(status: params[:status])
+    else
+      @merchant.coupons
+    end
     render json: CouponSerializer.new(coupons)
   end
 
@@ -39,6 +43,17 @@ class Api::V1::Merchants::CouponsController < ApplicationController
       end
     end
     
+    # check pending invoices before deactivating
+    if params[:coupon][:status] == 'inactive' && @coupon.status == 'active'
+      pending_invoices = @coupon.invoices.where(status: 'packaged')
+      if pending_invoices.any?
+        return render json: {
+          message: "Your query could not be completed",
+          errors: ["Cannot deactivate a coupon with pending invoices"]
+        }, status: :unprocessable_entity
+      end
+    end
+    
     if @coupon.update(coupon_params)
       render json: CouponSerializer.new(@coupon)
     else
@@ -56,7 +71,14 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   end
   
   def set_coupon
-    @coupon = @merchant.coupons.find(params[:id])
+    begin
+      @coupon = @merchant.coupons.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      render json: {
+        message: "Your query could not be completed",
+        errors: ["Couldn't find Coupon with 'id'=#{params[:id]}"]
+      }, status: :not_found
+    end
   end
   
   def coupon_params

@@ -1,9 +1,5 @@
 require 'rails_helper'
 
-RSpec.configure do
-  RSpec.config :documentation
-end
-
 RSpec.describe "Merchant Coupons API", type: :request do
   describe "GET /api/v1/merchants/:merchant_id/coupons/:id" do
     it "coupon count based on merchant" do
@@ -41,4 +37,5 @@ RSpec.describe "Merchant Coupons API", type: :request do
       expect(json[:errors]).to include("Couldn't find Coupon with 'id'=29138012")
     end
   end
+  # need to finish writting the rest of the tests, will do after i check that this is working on fe
 end

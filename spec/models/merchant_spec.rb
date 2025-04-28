@@ -91,5 +91,31 @@ describe Merchant, type: :model do
       expect(merchant.invoices_filtered_by_status("returned")).to eq([inv_5_returned])
       expect(other_merchant.invoices_filtered_by_status("packaged")).to eq([inv_4_packaged])
     end
+
+    describe '#active_coupons_count' do
+      it 'returns the count of active coupons for the merchant' do
+        merchant = create(:merchant)
+        create_list(:coupon, 3, merchant: merchant, status: 'active')
+        create_list(:coupon, 2, merchant: merchant, status: 'inactive')
+        
+        expect(merchant.active_coupons_count).to eq(3)
+      end
+    end
+    
+    describe '#can_activate_coupon?' do
+      it 'returns true when merchant has less than 5 active coupons' do
+        merchant = create(:merchant)
+        create_list(:coupon, 4, merchant: merchant, status: 'active')
+        
+        expect(merchant.can_activate_coupon?).to eq(true)
+      end
+      
+      it 'returns false when merchant already has 5 active coupons' do
+        merchant = create(:merchant)
+        create_list(:coupon, 5, merchant: merchant, status: 'active')
+        
+        expect(merchant.can_activate_coupon?).to eq(false)
+      end
+    end
   end
 end

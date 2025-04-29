@@ -238,4 +238,41 @@ RSpec.describe "Merchant coupons endpoints", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end
+
+  describe "Error handling" do
+    it "returning not found" do
+      non_existent_merchant_id = 324832482992
+      
+      get "/api/v1/merchants/#{non_existent_merchant_id}/coupons"
+      
+      expect(response).to have_http_status(:not_found)
+      
+      json = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(json[:message]).to eq("Your query could not be completed")
+      expect(json[:errors]).to include("Couldn't find Merchant with 'id'=#{non_existent_merchant_id}")
+    end
+    
+    it "merchant doesnt exist" do
+      non_existent_merchant_id = 324832482992
+      
+      coupon_params = {
+        coupon: {
+          name: "Test Coupon",
+          code: "TEST",
+          discount_type: "percent",
+          discount_amount: 10,
+          status: "active"
+        }
+      }
+      
+      post "/api/v1/merchants/#{non_existent_merchant_id}/coupons", params: coupon_params
+      expect(response).to have_http_status(:not_found)
+      
+      json = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(json[:message]).to eq("Your query could not be completed")
+      expect(json[:errors]).to include("Couldn't find Merchant with 'id'=#{non_existent_merchant_id}")
+    end
+  end
 end

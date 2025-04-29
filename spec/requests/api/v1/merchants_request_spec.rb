@@ -160,6 +160,17 @@ describe "Merchant endpoints", :type => :request do
       expect(Merchant.find(merchant.id).name).to eq(new_name)
     end
 
+    it "returns error properly" do
+      merchant = create(:merchant)
+      
+      patch "/api/v1/merchants/#{merchant.id}", params: { name: "" }, as: :json
+      json = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json[:message]).to eq("Your query could not be completed")
+      expect(json[:errors]).to include("Name can't be blank")
+    end
+
     it "should return 404 when id provided is not valid" do
       body = {
         name: "new name"

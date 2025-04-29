@@ -129,6 +129,24 @@ describe "Item endpoints", :type => :request do
       expect(json[:data][:attributes][:name]).to eq(item_name)
     end
 
+    it "returns error properly" do
+      merchant = create(:merchant)
+      item = create(:item, merchant: merchant)
+      
+      body = {
+        name: "",
+        description: "Updated description",
+        unit_price: 10.99
+      }
+      
+      patch "/api/v1/items/#{item.id}", params: body, as: :json
+      json = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json[:message]).to eq("Your query could not be completed")
+      expect(json[:errors]).to include("Name can't be blank")
+    end
+
     it "should return 404 when id provided is not valid" do
       body = {
         name: "new name"

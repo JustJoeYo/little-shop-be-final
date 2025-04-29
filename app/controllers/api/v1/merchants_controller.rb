@@ -1,5 +1,4 @@
 class Api::V1::MerchantsController < ApplicationController
-
   def index
     merchants = Merchant.all
 
@@ -25,9 +24,12 @@ class Api::V1::MerchantsController < ApplicationController
 
   def update
     merchant = Merchant.find(params[:id])
-    merchant.update!(merchant_params)
-
-    render json: MerchantSerializer.new(merchant)
+    
+    if merchant.update(merchant_params)
+      render json: MerchantSerializer.new(merchant)
+    else
+      render_validation_error(merchant.errors.full_messages)
+    end
   end
 
   def destroy

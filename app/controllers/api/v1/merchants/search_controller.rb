@@ -1,7 +1,8 @@
 class Api::V1::Merchants::SearchController < ApplicationController
   before_action :validate_params
+  
   def index
-      render json: MerchantSerializer.new(Merchant.find_all_by_name(params[:name]))
+    render json: MerchantSerializer.new(Merchant.find_all_by_name(params[:name]))
   end
 
   def show

@@ -21,13 +21,20 @@ class Api::V1::ItemsController < ApplicationController
 
   def update
     item = Item.find(params[:id])
+    
     if !item_params[:merchant_id].nil?
-      merchant = Merchant.find(item_params[:merchant_id])
+      begin
+        merchant = Merchant.find(item_params[:merchant_id])
+      rescue ActiveRecord::RecordNotFound
+        return render_not_found("Merchant", item_params[:merchant_id])
+      end
     end
-    item.update(item_params)
-    item.save
-
-    render json: ItemSerializer.new(item), status: :ok
+    
+    if item.update(item_params)
+      render json: ItemSerializer.new(item), status: :ok
+    else
+      render_validation_error(item.errors.full_messages)
+    end
   end
 
   def destroy
